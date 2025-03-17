@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuth } from '@vueuse/firebase';
+import { auth } from './services/auth';
 
 const routes = [
   {
     path: '/',
-    component: () => import('./views/Dashboard.vue'),
+    component: () => import('./views/Home.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -24,9 +24,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const { isAuthenticated } = useAuth();
-  
-  if (to.meta.requiresAuth && !isAuthenticated.value) {
+  if (to.meta.requiresAuth && !auth.isAuthenticated.value) {
     next('/login');
   } else {
     next();

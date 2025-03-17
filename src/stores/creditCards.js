@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
-import { db } from '../firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
-import { useAuth } from '@vueuse/firebase';
+import { database } from '../services/db';
+import { auth } from '../services/auth';
 
 export const useCreditCardStore = defineStore('creditCards', {
   state: () => ({
@@ -25,13 +24,14 @@ export const useCreditCardStore = defineStore('creditCards', {
 
   actions: {
     async fetchCards() {
-      const { user } = useAuth();
-      if (!user.value) return;
+      if (!auth.currentUser.value) return;
       
       this.loading = true;
       try {
-        const querySnapshot = await getDocs(collection(db, `users/${user.value.uid}/cards`));
-        this.cards = querySnapshot.docs.map(doc => ({
+        const { docs } = await database.getDocs({
+          path: `users/${auth.currentUser.value.uid}/cards`
+        });
+        this.cards = docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
@@ -44,11 +44,10 @@ export const useCreditCardStore = defineStore('creditCards', {
     },
 
     async addCard(cardData) {
-      const { user } = useAuth();
-      if (!user.value) return;
+      if (!auth.currentUser.value) return;
 
       try {
-        const docRef = await addDoc(collection(db, `users/${user.value.uid}/cards`), {
+        const { id } = await database.collection(`users/${auth.currentUser.value.uid}/cards`).add({
           ...cardData,
           createdAt: new Date().toISOString(),
           notifications: cardData.notifications || [
@@ -73,7 +72,7 @@ export const useCreditCardStore = defineStore('creditCards', {
           ]
         });
         await this.fetchCards();
-        return docRef.id;
+        return id;
       } catch (error) {
         console.error('Error adding card:', error);
         throw error;
@@ -81,11 +80,10 @@ export const useCreditCardStore = defineStore('creditCards', {
     },
 
     async updateCard(cardId, updates) {
-      const { user } = useAuth();
-      if (!user.value) return;
+      if (!auth.currentUser.value) return;
 
       try {
-        await updateDoc(doc(db, `users/${user.value.uid}/cards/${cardId}`), updates);
+        await database.doc(`users/${auth.currentUser.value.uid}/cards/${cardId}`).update(updates);
         await this.fetchCards();
       } catch (error) {
         console.error('Error updating card:', error);
@@ -94,11 +92,10 @@ export const useCreditCardStore = defineStore('creditCards', {
     },
 
     async deleteCard(cardId) {
-      const { user } = useAuth();
-      if (!user.value) return;
+      if (!auth.currentUser.value) return;
 
       try {
-        await deleteDoc(doc(db, `users/${user.value.uid}/cards/${cardId}`));
+        await database.doc(`users/${auth.currentUser.value.uid}/cards/${cardId}`).delete();
         this.cards = this.cards.filter(card => card.id !== cardId);
       } catch (error) {
         console.error('Error deleting card:', error);
