@@ -63,7 +63,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-medium text-slate-800">Your Credit Cards</h1>
+      <h1 class="text-2xl font-medium text-slate-900">Your Credit Cards</h1>
       <div class="flex items-center space-x-4">
         <div class="flex items-center bg-slate-100 rounded-lg p-1">
           <button
@@ -95,7 +95,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
         </div>
         <button
           @click="showAddModal = true"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+          class="inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
           Add Card
         </button>
@@ -154,7 +154,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
                     @click="confirmDelete(card)"
-                    class="text-rose-600 hover:text-rose-700"
+                    class="text-slate-600 hover:text-slate-900"
                   >
                     Delete
                   </button>
@@ -173,12 +173,12 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
           >
             <div class="flex justify-between items-start">
               <div>
-                <h3 class="font-medium text-slate-700">{{ card.name }}</h3>
+                <h3 class="font-medium text-slate-900">{{ card.name }}</h3>
                 <p class="text-sm text-slate-500">**** **** **** {{ card.lastFourDigits }}</p>
               </div>
               <button
                 @click="confirmDelete(card)"
-                class="text-rose-600 hover:text-rose-700 text-sm font-medium"
+                class="text-slate-600 hover:text-slate-900 text-sm font-medium"
               >
                 Delete
               </button>
@@ -223,7 +223,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
         <div class="absolute inset-0 bg-slate-500 opacity-75"></div>
       </div>
 
-      <div class="transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
+      <div class="transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-sm transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
         <div class="absolute top-0 right-0 pt-4 pr-4">
           <button
             @click="showAddModal = false"
@@ -243,118 +243,118 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
               <form @submit.prevent="addCard" class="space-y-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Card Name</label>
+                    <label class="block text-sm font-medium text-slate-700">Card Name</label>
                     <input
                       v-model="newCard.name"
                       type="text"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Last 4 Digits</label>
+                    <label class="block text-sm font-medium text-slate-700">Last 4 Digits</label>
                     <input
                       v-model="newCard.lastFourDigits"
                       type="text"
                       maxlength="4"
                       pattern="[0-9]{4}"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Promo Rate (%)</label>
+                    <label class="block text-sm font-medium text-slate-700">Promo Rate (%)</label>
                     <input
                       v-model="newCard.promoRate"
                       type="number"
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Standard Rate (%)</label>
+                    <label class="block text-sm font-medium text-slate-700">Standard Rate (%)</label>
                     <input
                       v-model="newCard.standardRate"
                       type="number"
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Credit Limit ($)</label>
+                    <label class="block text-sm font-medium text-slate-700">Credit Limit ($)</label>
                     <input
                       v-model="newCard.creditLimit"
                       type="number"
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Current Balance ($)</label>
+                    <label class="block text-sm font-medium text-slate-700">Current Balance ($)</label>
                     <input
                       v-model="newCard.currentBalance"
                       type="number"
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Minimum Payment ($)</label>
+                    <label class="block text-sm font-medium text-slate-700">Minimum Payment ($)</label>
                     <input
                       v-model="newCard.minimumPayment"
                       type="number"
                       step="0.01"
                       min="0"
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Autopay Date</label>
+                    <label class="block text-sm font-medium text-slate-700">Autopay Date</label>
                     <select
                       v-model="newCard.autopayDate"
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     >
                       <option v-for="day in days" :key="day" :value="day">{{ day }}</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-600">Promo Expiry Date</label>
+                    <label class="block text-sm font-medium text-slate-700">Promo Expiry Date</label>
                     <input
                       v-model="newCard.promoExpiryDate"
                       type="date"
                       required
                       @change="handleDateSelect"
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-600">Notes</label>
+                  <label class="block text-sm font-medium text-slate-700">Notes</label>
                   <textarea
                     v-model="newCard.notes"
                     rows="3"
-                    class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                    class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                   ></textarea>
                 </div>
                 <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    class="inline-flex w-full justify-center rounded-md border border-transparent bg-sky-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                    class="inline-flex w-full justify-center rounded-md border border-slate-300 px-4 py-2 text-base font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     Add Card
                   </button>
                   <button
                     type="button"
                     @click="showAddModal = false"
-                    class="mt-3 inline-flex w-full justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                    class="mt-3 inline-flex w-full justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
                   >
                     Cancel
                   </button>
