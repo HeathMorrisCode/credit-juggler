@@ -96,7 +96,7 @@ const deleteCard = async () => {
               <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ card.regularApr }}%</dd>
             </div>
             <div class="px-4 py-5 sm:p-6">
-              <dt class="text-sm font-medium text-gray-500">Promo Expiry Date</dt>
+              <dt class="text-sm font-medium text-gray-500">aPromo Expiry Date</dt>
               <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ new Date(card.promoExpiryDate).toLocaleDateString() }}</dd>
             </div>
           </dl>
@@ -129,7 +129,7 @@ const deleteCard = async () => {
               <input v-model.number="editForm.regularApr" type="number" step="0.01" class="input-field" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Promo Expiry Date</label>
+              <label class="block text-sm font-medium text-gray-700">aPromo Expiry Date</label>
               <input v-model="editForm.promoExpiryDate" type="date" class="input-field" />
             </div>
           </div>

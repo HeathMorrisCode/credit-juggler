@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
+import BaseButton from './BaseButton.vue';
 
 const props = defineProps({
   show: Boolean,
@@ -33,20 +34,15 @@ const emit = defineEmits(['confirm', 'cancel']);
           </div>
         </div>
         <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-          <button
-            type="button"
-            class="inline-flex w-full justify-center rounded-md border border-slate-300 px-4 py-2 text-base font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-            @click="emit('confirm')"
-          >
+          <BaseButton @click="emit('confirm')">
             Confirm
-          </button>
-          <button
-            type="button"
-            class="mt-3 inline-flex w-full justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+          </BaseButton>
+          <BaseButton
             @click="emit('cancel')"
+            class="mr-3"
           >
             Cancel
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>

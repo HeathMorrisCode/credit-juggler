@@ -1,44 +1,29 @@
 <script setup>
 import { ref } from 'vue';
 import { useCreditCardStore } from '../stores/creditCards';
-import { auth } from '../services/auth';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import BaseButton from '../components/BaseButton.vue';
 
 const creditCardStore = useCreditCardStore();
-const viewMode = ref('cards'); // 'cards' or 'table'
-const cardToDelete = ref(null);
-const showDeleteModal = ref(false);
+const viewMode = ref('cards');
 const showAddModal = ref(false);
+const showDeleteModal = ref(false);
+const cardToDelete = ref(null);
+
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
 const newCard = ref({
   name: '',
   lastFourDigits: '',
-  promoExpiryDate: '',
   promoRate: '',
   standardRate: '',
   creditLimit: '',
   currentBalance: '',
   minimumPayment: '',
-  autopayDate: '1',
+  autopayDate: '',
+  promoExpiryDate: '',
   notes: ''
 });
-
-const addCard = async () => {
-  await creditCardStore.addCard(newCard.value);
-  newCard.value = {
-    name: '',
-    lastFourDigits: '',
-    promoExpiryDate: '',
-    promoRate: '',
-    standardRate: '',
-    creditLimit: '',
-    currentBalance: '',
-    minimumPayment: '',
-    autopayDate: '1',
-    notes: ''
-  };
-  showAddModal.value = false;
-};
 
 const confirmDelete = (card) => {
   cardToDelete.value = card;
@@ -53,11 +38,29 @@ const handleDelete = async () => {
   }
 };
 
-const handleDateSelect = (event) => {
-  event.target.blur();
+const addCard = async () => {
+  await creditCardStore.addCard({
+    ...newCard.value,
+    id: Date.now().toString()
+  });
+  showAddModal.value = false;
+  newCard.value = {
+    name: '',
+    lastFourDigits: '',
+    promoRate: '',
+    standardRate: '',
+    creditLimit: '',
+    currentBalance: '',
+    minimumPayment: '',
+    autopayDate: '',
+    promoExpiryDate: '',
+    notes: ''
+  };
 };
 
-const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const handleDateSelect = (event) => {
+  newCard.value.promoExpiryDate = event.target.value;
+};
 </script>
 
 <template>
@@ -93,12 +96,9 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
             </svg>
           </button>
         </div>
-        <button
-          @click="showAddModal = true"
-          class="inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-        >
+        <BaseButton @click="showAddModal = true">
           Add Card
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -152,12 +152,9 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                   {{ new Date(card.promoExpiryDate).toLocaleDateString() }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    @click="confirmDelete(card)"
-                    class="text-slate-600 hover:text-slate-900"
-                  >
+                  <BaseButton @click="confirmDelete(card)">
                     Delete
-                  </button>
+                  </BaseButton>
                 </td>
               </tr>
             </tbody>
@@ -176,12 +173,9 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                 <h3 class="font-medium text-slate-900">{{ card.name }}</h3>
                 <p class="text-sm text-slate-500">**** **** **** {{ card.lastFourDigits }}</p>
               </div>
-              <button
-                @click="confirmDelete(card)"
-                class="text-slate-600 hover:text-slate-900 text-sm font-medium"
-              >
+              <BaseButton @click="confirmDelete(card)">
                 Delete
-              </button>
+              </BaseButton>
             </div>
             <div class="mt-2 grid grid-cols-2 gap-2">
               <p class="text-sm text-slate-600">
@@ -240,15 +234,15 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
           <div class="mt-3 w-full text-center sm:mt-0 sm:text-left">
             <h3 class="text-lg font-medium leading-6 text-slate-900">Add New Card</h3>
             <div class="mt-4">
-              <form @submit.prevent="addCard" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <form @submit.prevent="addCard" class="space-y-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label class="block text-sm font-medium text-slate-700">Card Name</label>
                     <input
                       v-model="newCard.name"
                       type="text"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -259,7 +253,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                       maxlength="4"
                       pattern="[0-9]{4}"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -270,7 +264,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -281,7 +275,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -292,7 +286,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -303,7 +297,7 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                       step="0.01"
                       min="0"
                       required
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -313,27 +307,35 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                       type="number"
                       step="0.01"
                       min="0"
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700">Autopay Date</label>
                     <select
                       v-model="newCard.autopayDate"
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                      class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                     >
                       <option v-for="day in days" :key="day" :value="day">{{ day }}</option>
                     </select>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700">Promo Expiry Date</label>
-                    <input
-                      v-model="newCard.promoExpiryDate"
-                      type="date"
-                      required
-                      @change="handleDateSelect"
-                      class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
-                    />
+                    <div 
+                      class="relative mt-1"
+                      @click="$refs.dateInput.showPicker()"
+                    >
+                      <input
+                        ref="dateInput"
+                        v-model="newCard.promoExpiryDate"
+                        type="date"
+                        required
+                        @change="handleDateSelect"
+                        class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm cursor-pointer"
+                      />
+                      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -341,23 +343,20 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
                   <textarea
                     v-model="newCard.notes"
                     rows="3"
-                    class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
+                    class="mt-1 block w-full rounded-md border-slate-300 px-4 py-3 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm"
                   ></textarea>
                 </div>
                 <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    class="inline-flex w-full justify-center rounded-md border border-slate-300 px-4 py-2 text-base font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
+                  <BaseButton type="submit">
                     Add Card
-                  </button>
-                  <button
+                  </BaseButton>
+                  <BaseButton
                     type="button"
                     @click="showAddModal = false"
-                    class="mt-3 inline-flex w-full justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                    class="mr-3"
                   >
                     Cancel
-                  </button>
+                  </BaseButton>
                 </div>
               </form>
             </div>

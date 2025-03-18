@@ -4,6 +4,7 @@ import { onMounted } from 'vue';
 import { auth } from './services/auth';
 import { useCreditCardStore } from './stores/creditCards';
 import { useRouter } from 'vue-router';
+import BaseButton from './components/BaseButton.vue';
 
 const router = useRouter();
 const creditCardStore = useCreditCardStore();
@@ -34,16 +35,15 @@ onMounted(() => {
           </div>
           <div class="flex items-center space-x-4">
             <span v-if="auth.isAuthenticated" class="text-sm text-slate-600">{{ auth.currentUser?.email }}</span>
-            <button 
+            <BaseButton 
               v-if="auth.isAuthenticated" 
               @click="handleSignOut"
-              class="text-sm font-medium text-rose-600 hover:text-rose-700"
             >
               Sign Out
-            </button>
-            <button v-else class="text-sm font-medium text-slate-600 hover:text-slate-900">
+            </BaseButton>
+            <BaseButton v-else>
               Sign In
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
