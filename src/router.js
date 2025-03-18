@@ -11,11 +11,7 @@ const routes = [
     path: '/login',
     component: () => import('./views/Login.vue')
   },
-  {
-    path: '/card/:id',
-    component: () => import('./views/CardDetail.vue'),
-    meta: { requiresAuth: true }
-  }
+
 ];
 
 const router = createRouter({

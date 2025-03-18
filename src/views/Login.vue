@@ -8,16 +8,11 @@ const router = useRouter();
 const email = ref('');
 const password = ref('');
 const error = ref('');
-const isSignUp = ref(false);
 
 const handleSubmit = async () => {
+  error.value = '';
   try {
-    error.value = '';
-    if (isSignUp.value) {
-      await auth.createUser(email.value, password.value);
-    } else {
-      await auth.signIn(email.value, password.value);
-    }
+    await auth.signIn(email.value, password.value);
     router.push('/');
   } catch (e) {
     error.value = e.message;
@@ -26,63 +21,57 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-      <h2 class="mt-6 text-center text-3xl font-medium text-slate-900">
-        {{ isSignUp ? 'Create an account' : 'Sign in to your account' }}
-      </h2>
-    </div>
-
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-        <form class="space-y-6" @submit.prevent="handleSubmit">
-          <div>
-            <label for="email" class="block text-sm font-medium text-slate-700">Email address</label>
-            <div class="mt-1">
-              <input
-                id="email"
-                v-model="email"
-                type="email"
-                required
-                class="block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
-            <div class="mt-1">
-              <input
-                id="password"
-                v-model="password"
-                type="password"
-                required
-                class="block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
-              />
-            </div>
-          </div>
-
-          <div v-if="error" class="text-sm text-slate-700 bg-slate-50 p-3 rounded">
-            {{ error }}
-          </div>
-
-          <div>
-            <BaseButton type="submit" class="w-full justify-center">
-              {{ isSignUp ? 'Sign up' : 'Sign in' }}
-            </BaseButton>
-          </div>
-
-          <div class="text-center">
-            <button
-              type="button"
-              class="text-sm text-slate-600 hover:text-slate-900"
-              @click="isSignUp = !isSignUp"
-            >
-              {{ isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up" }}
-            </button>
-          </div>
-        </form>
+  <div class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <div>
+        <h2 class="mt-6 text-center text-3xl font-medium text-gray-900">
+          Sign in to Credit Juggler
+        </h2>
       </div>
+      <form class="mt-8 space-y-6" @submit.prevent="handleSubmit">
+        <div class="space-y-4">
+          <div>
+            <label for="email-address" class="block text-sm font-medium text-gray-700">Email address</label>
+            <input
+              id="email-address"
+              v-model="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              class="block w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-black focus:border-gray-500"
+            />
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              id="password"
+              v-model="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              class="block w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-black focus:border-gray-500"
+            />
+          </div>
+        </div>
+
+        <div v-if="error" class="rounded-md bg-red-50 p-4">
+          <div class="flex">
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">
+                {{ error }}
+              </h3>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <BaseButton type="submit" class="w-full justify-center">
+            Sign in
+          </BaseButton>
+        </div>
+      </form>
     </div>
   </div>
 </template>
