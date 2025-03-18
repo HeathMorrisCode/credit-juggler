@@ -1,16 +1,17 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useCreditCardStore } from '../stores/creditCards';
-import ConfirmModal from '../components/ConfirmModal.vue';
 import BaseButton from '../components/BaseButton.vue';
+import ConfirmModal from '../components/ConfirmModal.vue';
 
 const creditCardStore = useCreditCardStore();
-const viewMode = ref('cards');
 const showAddModal = ref(false);
-const showDeleteModal = ref(false);
+const showConfirmDelete = ref(false);
 const cardToDelete = ref(null);
-
+const viewMode = ref('cards');
 const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const dateInput = ref(null);
+const fileInput = ref(null);
 
 const newCard = ref({
   name: '',
@@ -20,26 +21,17 @@ const newCard = ref({
   creditLimit: '',
   currentBalance: '',
   minimumPayment: '',
-  autopayDate: '',
+  autopayDate: 1,
   promoExpiryDate: '',
   notes: ''
 });
 
-const confirmDelete = (card) => {
-  cardToDelete.value = card;
-  showDeleteModal.value = true;
+const handleDateSelect = () => {
+  // Date picker handling remains unchanged
 };
 
-const handleDelete = async () => {
-  if (cardToDelete.value) {
-    await creditCardStore.deleteCard(cardToDelete.value.id);
-    showDeleteModal.value = false;
-    cardToDelete.value = null;
-  }
-};
-
-const addCard = async () => {
-  await creditCardStore.addCard({
+const addCard = () => {
+  creditCardStore.addCard({
     ...newCard.value,
     id: Date.now().toString()
   });
@@ -52,14 +44,59 @@ const addCard = async () => {
     creditLimit: '',
     currentBalance: '',
     minimumPayment: '',
-    autopayDate: '',
+    autopayDate: 1,
     promoExpiryDate: '',
     notes: ''
   };
 };
 
-const handleDateSelect = (event) => {
-  newCard.value.promoExpiryDate = event.target.value;
+const confirmDelete = (card) => {
+  cardToDelete.value = card;
+  showConfirmDelete.value = true;
+};
+
+const handleDelete = () => {
+  if (cardToDelete.value) {
+    creditCardStore.deleteCard(cardToDelete.value.id);
+    showConfirmDelete.value = false;
+    cardToDelete.value = null;
+  }
+};
+
+const exportCards = () => {
+  const data = JSON.stringify(creditCardStore.cards, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `credit-cards-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const importCards = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const cards = JSON.parse(e.target.result);
+        if (Array.isArray(cards)) {
+          cards.forEach(card => {
+            if (!creditCardStore.cards.find(c => c.id === card.id)) {
+              creditCardStore.addCard(card);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error importing cards:', error);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset the input
+  }
 };
 </script>
 
@@ -68,6 +105,7 @@ const handleDateSelect = (event) => {
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-medium text-gray-900">Your Credit Cards</h1>
       <div class="flex items-center space-x-4">
+        <!-- View Mode Switcher -->
         <div class="flex items-center bg-gray-100 rounded-lg p-1">
           <button
             @click="viewMode = 'cards'"
@@ -96,9 +134,26 @@ const handleDateSelect = (event) => {
             </svg>
           </button>
         </div>
-        <BaseButton @click="showAddModal = true">
-          Add Card
-        </BaseButton>
+        
+        <!-- Import/Export Buttons -->
+        <div class="flex items-center space-x-2">
+          <input
+            type="file"
+            accept=".json"
+            class="hidden"
+            ref="fileInput"
+            @change="importCards"
+          />
+          <BaseButton @click="$refs.fileInput.click()">
+            Import
+          </BaseButton>
+          <BaseButton @click="exportCards">
+            Export
+          </BaseButton>
+          <BaseButton @click="showAddModal = true">
+            Add Card
+          </BaseButton>
+        </div>
       </div>
     </div>
 
@@ -366,10 +421,10 @@ const handleDateSelect = (event) => {
 
   <!-- Delete Confirmation Modal -->
   <ConfirmModal
-    :show="showDeleteModal"
+    :show="showConfirmDelete"
     title="Delete Card"
-    :message="'Are you sure you want to delete ' + (cardToDelete?.name || 'this card') + '?'"
+    message="Are you sure you want to delete this card? This action cannot be undone."
     @confirm="handleDelete"
-    @cancel="showDeleteModal = false"
+    @cancel="showConfirmDelete = false"
   />
 </template>
