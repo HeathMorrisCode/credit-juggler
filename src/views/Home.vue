@@ -98,6 +98,33 @@ const importCards = (event) => {
     event.target.value = ''; // Reset the input
   }
 };
+
+const availableViewModes = computed(() => {
+  if (window.innerWidth < 640) { // sm breakpoint
+    return ['cards'];
+  }
+  return ['cards', 'table'];
+});
+
+const formatLastFour = (digits) => {
+  return digits ? `*${digits}` : '-';
+};
+
+const formatCurrency = (amount) => {
+  return amount ? `$${amount}` : '-';
+};
+
+const formatRate = (rate) => {
+  return rate ? `${rate}%` : '-';
+};
+
+const formatDate = (date) => {
+  return date ? new Date(date).toLocaleDateString() : '-';
+};
+
+const formatDay = (day) => {
+  return day ? `Day: ${day}` : '-';
+};
 </script>
 
 <template>
@@ -105,37 +132,29 @@ const importCards = (event) => {
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-medium text-gray-900">Your Credit Cards</h1>
       <div class="flex items-center space-x-4">
-        <!-- View Mode Switcher -->
-        <div class="flex items-center bg-gray-100 rounded-lg p-1">
+        <!-- View Mode Switcher - Hidden on Mobile -->
+        <div v-if="availableViewModes.length > 1" class="flex items-center bg-gray-100 rounded-lg p-1">
           <button
-            @click="viewMode = 'cards'"
+            v-for="mode in availableViewModes"
+            :key="mode"
+            @click="viewMode = mode"
             :class="[
-              'p-2 rounded-md transition-colors',
-              viewMode === 'cards'
-                ? 'bg-white shadow-sm text-gray-700'
-                : 'text-gray-600 hover:text-gray-900'
+              'px-3 py-1.5 text-sm font-medium rounded-md focus:outline-none',
+              viewMode === mode
+                ? 'bg-white text-gray-900 shadow'
+                : 'text-gray-500 hover:text-gray-900'
             ]"
           >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg v-if="mode === 'cards'" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
-          </button>
-          <button
-            @click="viewMode = 'table'"
-            :class="[
-              'p-2 rounded-md transition-colors',
-              viewMode === 'table'
-                ? 'bg-white shadow-sm text-gray-700'
-                : 'text-gray-600 hover:text-gray-900'
-            ]"
-          >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <svg v-else class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </button>
         </div>
         
-        <!-- Import/Export Buttons -->
+        <!-- Import/Export and Add Card Buttons -->
         <div class="flex items-center space-x-2">
           <input
             type="file"
@@ -163,19 +182,16 @@ const importCards = (event) => {
         No cards added yet
       </div>
       <div v-else>
-        <!-- Table View -->
-        <div v-if="viewMode === 'table'" class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+        <!-- Table View - Hidden on Mobile -->
+        <div v-if="viewMode === 'table'" class="hidden sm:block overflow-x-auto">
+          <!-- Tablet View -->
+          <table class="min-w-full divide-y divide-gray-200 sm:table lg:hidden">
             <thead>
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Payment</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Limit</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Rate</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Standard Rate</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Autopay Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Expires</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rates</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payments</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -183,33 +199,76 @@ const importCards = (event) => {
               <tr v-for="card in creditCardStore.cards" :key="card.id">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-medium text-gray-900">{{ card.name }}</div>
-                  <div class="text-sm text-gray-500">**** {{ card.lastFourDigits }}</div>
+                  <div class="text-sm text-gray-500">{{ formatLastFour(card.lastFourDigits) }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${{ card.currentBalance }}
+                  {{ formatCurrency(card.currentBalance) }} / {{ formatCurrency(card.creditLimit) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${{ card.minimumPayment }}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <template v-if="card.promoRate">
+                    <div class="text-sm font-medium text-gray-900">⭐ {{ formatRate(card.promoRate) }}</div>
+                    <div class="text-sm text-gray-900">{{ formatDate(card.promoExpiryDate) }}</div>
+                  </template>
+                  <div class="text-sm text-gray-500">{{ formatRate(card.standardRate) }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${{ card.creditLimit }}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">{{ formatCurrency(card.minimumPayment) }}</div>
+                  <div class="text-sm text-gray-500">{{ formatDay(card.autopayDate) }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ card.promoRate }}%
+                <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                  <button class="p-2 text-gray-400 hover:text-gray-500 rounded-lg">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button @click="confirmDelete(card)" class="p-2 text-gray-400 hover:text-gray-500 rounded-lg">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ card.standardRate }}%
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ card.autopayDate }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ new Date(card.promoExpiryDate).toLocaleDateString() }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <BaseButton @click="confirmDelete(card)">
-                    Delete
-                  </BaseButton>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Desktop View -->
+          <table class="min-w-full divide-y divide-gray-200 hidden lg:table">
+            <thead>
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last 4</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit Limit</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Standard Rate</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Rate</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Expiry</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Autopay</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="card in creditCardStore.cards" :key="card.id">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ card.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatLastFour(card.lastFourDigits) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(card.currentBalance) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(card.creditLimit) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatRate(card.standardRate) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatRate(card.promoRate) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(card.promoExpiryDate) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(card.minimumPayment) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDay(card.autopayDate) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                  <button class="p-2 text-gray-400 hover:text-gray-500 rounded-lg">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button @click="confirmDelete(card)" class="p-2 text-gray-400 hover:text-gray-500 rounded-lg">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </td>
               </tr>
             </tbody>
