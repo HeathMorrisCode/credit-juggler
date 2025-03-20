@@ -10,6 +10,16 @@ const showConfirmDelete = ref(false);
 const cardToDelete = ref(null);
 const viewMode = ref('cards');
 const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const daysEnglish = Array.from({ length: 31 }, (_, i) => {
+  const num = i + 1;
+  if (num >= 11 && num <= 13) return `${num}th`;
+  switch (num % 10) {
+    case 1: return `${num}st`;
+    case 2: return `${num}nd`;
+    case 3: return `${num}rd`;
+    default: return `${num}th`;
+  }
+});
 const dateInput = ref(null);
 const fileInput = ref(null);
 
@@ -26,8 +36,8 @@ const newCard = ref({
   notes: ''
 });
 
-const handleDateSelect = () => {
-  // Date picker handling remains unchanged
+const handleDateSelect = (event) => {
+  newCard.value.promoExpiryDate = event.target.value;
 };
 
 const addCard = () => {
@@ -111,20 +121,46 @@ const formatLastFour = (digits) => {
 };
 
 const formatCurrency = (amount) => {
-  return amount ? `$${amount}` : '-';
+  if (amount === null || amount === undefined || amount === '') return '-';
+  return `$${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const formatRate = (rate) => {
-  return rate ? `${rate}%` : '-';
+  if (rate === null || rate === undefined || rate === '') return '-';
+  return `${Number(rate)}%`;
 };
 
 const formatDate = (date) => {
-  return date ? new Date(date).toLocaleDateString() : '-';
+  if (!date) return '-';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: '2-digit',
+    timeZone: 'UTC'
+  });
+};
+
+const isExpired = (date) => {
+  if (!date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiryDate = new Date(date);
+  expiryDate.setHours(0, 0, 0, 0);
+  return expiryDate < today;
 };
 
 const formatDay = (day) => {
-  return day ? `Day: ${day}` : '-';
+  if (!day) return '-';
+  const index = Number(day) - 1;
+  return daysEnglish[index] || '-';
 };
+
+const formatNumber = (number) => {
+  if (number === null || number === undefined || number === '') return '-';
+  return Number(number).toLocaleString('en-US');
+};
+
 </script>
 
 <template>
@@ -188,34 +224,36 @@ const formatDay = (day) => {
           <table class="min-w-full divide-y divide-gray-200 sm:table lg:hidden">
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rates</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payments</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rates</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payments</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="card in creditCardStore.cards" :key="card.id">
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap text-left">
                   <div class="text-sm font-medium text-gray-900">{{ card.name }}</div>
                   <div class="text-sm text-gray-500">{{ formatLastFour(card.lastFourDigits) }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
                   {{ formatCurrency(card.currentBalance) }} / {{ formatCurrency(card.creditLimit) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap text-left">
                   <template v-if="card.promoRate">
                     <div class="text-sm font-medium text-gray-900">⭐ {{ formatRate(card.promoRate) }}</div>
-                    <div class="text-sm text-gray-900">{{ formatDate(card.promoExpiryDate) }}</div>
+                    <div class="text-sm" :class="{ 'font-bold text-red-600': isExpired(card.promoExpiryDate), 'text-gray-900': !isExpired(card.promoExpiryDate) }">
+                      {{ formatDate(card.promoExpiryDate) }}
+                    </div>
                   </template>
                   <div class="text-sm text-gray-500">{{ formatRate(card.standardRate) }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap text-left">
                   <div class="text-sm font-medium text-gray-900">{{ formatCurrency(card.minimumPayment) }}</div>
                   <div class="text-sm text-gray-500">{{ formatDay(card.autopayDate) }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                <td class="px-4 py-4 whitespace-nowrap text-right space-x-2">
                   <button class="p-2 text-gray-400 hover:text-gray-500 rounded-lg">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -235,30 +273,32 @@ const formatDay = (day) => {
           <table class="min-w-full divide-y divide-gray-200 hidden lg:table">
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last 4</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit Limit</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Standard Rate</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Rate</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Expiry</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Autopay</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last 4</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit Limit</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Standard Rate</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Rate</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promo Expiry</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Autopay</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Date</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="card in creditCardStore.cards" :key="card.id">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ card.name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatLastFour(card.lastFourDigits) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(card.currentBalance) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(card.creditLimit) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatRate(card.standardRate) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatRate(card.promoRate) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(card.promoExpiryDate) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatCurrency(card.minimumPayment) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDay(card.autopayDate) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ card.name }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatLastFour(card.lastFourDigits) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatCurrency(card.currentBalance) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatCurrency(card.creditLimit) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatRate(card.standardRate) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatRate(card.promoRate) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-left" :class="{ 'font-bold text-red-600': isExpired(card.promoExpiryDate), 'text-gray-900': !isExpired(card.promoExpiryDate) }">
+                  {{ formatDate(card.promoExpiryDate) }}
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatCurrency(card.minimumPayment) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ formatDay(card.autopayDate) }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-right space-x-2">
                   <button class="p-2 text-gray-400 hover:text-gray-500 rounded-lg">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -285,7 +325,7 @@ const formatDay = (day) => {
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="font-medium text-gray-900">{{ card.name }}</h3>
-                <p class="text-sm text-gray-500">**** **** **** {{ card.lastFourDigits }}</p>
+                <p class="text-sm text-gray-500">*{{ card.lastFourDigits }}</p>
               </div>
               <BaseButton @click="confirmDelete(card)">
                 Delete
@@ -293,26 +333,28 @@ const formatDay = (day) => {
             </div>
             <div class="mt-2 grid grid-cols-2 gap-2">
               <p class="text-sm text-gray-600">
-                <span class="font-medium">Balance:</span> ${{ card.currentBalance }}
+                <span class="font-medium">Balance:</span> ${{ formatNumber(card.currentBalance) }}
               </p>
               <p class="text-sm text-gray-600">
-                <span class="font-medium">Credit Limit:</span> ${{ card.creditLimit }}
+                <span class="font-medium">Credit Limit:</span> ${{ formatNumber(card.creditLimit) }}
               </p>
               <p class="text-sm text-gray-600">
-                <span class="font-medium">Promo Rate:</span> {{ card.promoRate }}%
+                <span class="font-medium">Promo Rate:</span> {{ formatRate(card.promoRate) }}
               </p>
               <p class="text-sm text-gray-600">
-                <span class="font-medium">Standard Rate:</span> {{ card.standardRate }}%
+                <span class="font-medium">Standard Rate:</span> {{ formatRate(card.standardRate) }}
               </p>
               <p class="text-sm text-gray-600">
-                <span class="font-medium">Min Payment:</span> ${{ card.minimumPayment }}
+                <span class="font-medium">Autopay:</span> ${{ formatNumber(card.minimumPayment) }}
               </p>
               <p class="text-sm text-gray-600">
-                <span class="font-medium">Autopay:</span> {{ card.autopayDate }}
+                <span class="font-medium">Payment Date:</span> {{ formatDay(card.autopayDate) }}
               </p>
               <p class="text-sm text-gray-600 col-span-2">
-                <span class="font-medium">Promo Expires:</span>
-                {{ new Date(card.promoExpiryDate).toLocaleDateString() }}
+                <span class="font-medium">Promo Expires: </span>
+                <span :class="{ 'font-bold text-red-600': isExpired(card.promoExpiryDate) }">
+                  {{ formatDate(card.promoExpiryDate) }}
+                </span>
               </p>
             </div>
             <p v-if="card.notes" class="text-sm text-gray-500 mt-2">
@@ -351,7 +393,7 @@ const formatDay = (day) => {
               <form @submit.prevent="addCard" class="space-y-6">
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Card Name</label>
+                    <label class="block text-sm font-medium text-gray-700">Card Name <sup class="text-red-500">*</sup></label>
                     <input
                       v-model="newCard.name"
                       type="text"
@@ -360,7 +402,7 @@ const formatDay = (day) => {
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Last 4 Digits</label>
+                    <label class="block text-sm font-medium text-gray-700">Last 4 Digits <sup class="text-red-500">*</sup></label>
                     <input
                       v-model="newCard.lastFourDigits"
                       type="text"
@@ -377,12 +419,11 @@ const formatDay = (day) => {
                       type="number"
                       step="0.01"
                       min="0"
-                      required
                       class="block w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-black focus:border-gray-500"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Standard Rate (%)</label>
+                    <label class="block text-sm font-medium text-gray-700">Standard Rate (%) <sup class="text-red-500">*</sup></label>
                     <input
                       v-model="newCard.standardRate"
                       type="number"
@@ -393,7 +434,7 @@ const formatDay = (day) => {
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Credit Limit ($)</label>
+                    <label class="block text-sm font-medium text-gray-700">Credit Limit ($) <sup class="text-red-500">*</sup></label>
                     <input
                       v-model="newCard.creditLimit"
                       type="number"
@@ -404,7 +445,7 @@ const formatDay = (day) => {
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Current Balance ($)</label>
+                    <label class="block text-sm font-medium text-gray-700">Current Balance ($) <sup class="text-red-500">*</sup></label>
                     <input
                       v-model="newCard.currentBalance"
                       type="number"
@@ -415,19 +456,21 @@ const formatDay = (day) => {
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Minimum Payment ($)</label>
+                    <label class="block text-sm font-medium text-gray-700">Minimum Payment ($) <sup class="text-red-500">*</sup></label>
                     <input
                       v-model="newCard.minimumPayment"
                       type="number"
                       step="0.01"
                       min="0"
+                      required
                       class="block w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-black focus:border-gray-500"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Autopay Date</label>
+                    <label class="block text-sm font-medium text-gray-700">Autopay Date <sup class="text-red-500">*</sup></label>
                     <select
                       v-model="newCard.autopayDate"
+                      required
                       class="block w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-black focus:border-gray-500"
                     >
                       <option v-for="day in days" :key="day" :value="day">{{ day }}</option>
@@ -443,7 +486,6 @@ const formatDay = (day) => {
                         ref="dateInput"
                         v-model="newCard.promoExpiryDate"
                         type="date"
-                        required
                         @change="handleDateSelect"
                         class="block w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-black focus:border-gray-500 cursor-pointer"
                       />
